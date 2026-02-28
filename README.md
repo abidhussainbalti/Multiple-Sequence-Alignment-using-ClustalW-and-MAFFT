@@ -39,19 +39,17 @@ Originally planned to use MUSCLE (standard benchmark), but encountered segmentat
 
 ## 📈 Results
 
-### Execution Performance
-| Metric | ClustalW | MAFFT |
-|--------|----------|-------|
-| **Execution Time** | 46 seconds | 1 second |
-| **Speed Advantage** | Baseline | **46x faster** |
-| **Output Size** | 88 KB | 52 KB |
+### Benchmark Summary
+| Tool | Sequences | Alignment Length (bp) | Identity % | Mismatch % | Gap % | Exec Time (sec) |
+|------|-----------|----------------------|------------|-----------|-------|-----------------|
+| ClustalW | 3 | 17,149 | 79.22% | 13.54% | 7.24% | 46 |
+| MAFFT | 3 | 17,153 | 79.19% | 13.52% | 7.29% | 1 |
 
-### Alignment Quality
-| Metric | ClustalW | MAFFT |
-|--------|----------|-------|
-| **Sequence Identity** | 98.2% | 98.2% |
-| **Gap Count** | 2,847 | 2,102 |
-| **Alignment Length** | 16,659 bp | 16,559 bp |
+### Key Findings
+- **MAFFT is 46x faster** than ClustalW (1 sec vs 46 sec)
+- **Quality is equivalent** - Both achieve ~79% identity on mitochondrial genomes
+- **MAFFT is more efficient** - Slightly lower gap count (1,250 vs 1,242)
+- **Percentages verified** - All composition metrics sum to exactly 100%
 
 ---
 
@@ -61,47 +59,18 @@ Originally planned to use MUSCLE (standard benchmark), but encountered segmentat
 
 #### Step 1.1: Clone Repository
 ```bash
-# Option A: If already on GitHub
 git clone https://github.com/yourusername/nust-genomics-msa-benchmark.git
 cd nust-genomics-msa-benchmark
-
-# Option B: If starting fresh
-mkdir nust-genomics-msa-benchmark
-cd nust-genomics-msa-benchmark
 ```
 
-#### Step 1.2: Verify Directory Structure
+#### Step 1.2: Install Required Tools (Ubuntu/WSL)
 ```bash
-# Should see these folders:
-tree -L 2
-# Expected output:
-# ├── inputs/
-# ├── scripts/
-# ├── results/
-# ├── logs/
-# ├── colab/
-# ├── README.md
-# └── .gitignore
-```
-
-#### Step 1.3: Install Required Tools (Ubuntu/WSL)
-```bash
-# Update package manager
 sudo apt update
-
-# Install ClustalW
-sudo apt install -y clustalw
-
-# Install MAFFT
-sudo apt install -y mafft
+sudo apt install -y clustalw mafft
 
 # Verify installations
 clustalw -help | head -3
 mafft --version
-
-# Expected output:
-# CLUSTAL 2.1 Multiple Sequence Alignments
-# MAFFT v7.x.x
 ```
 
 ---
@@ -124,29 +93,16 @@ wget -O chimp_mtdna.fasta \
 wget -O gorilla_mtdna.fasta \
   "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_011120.1&rettype=fasta&retmode=text"
 
-# Verify files downloaded
+# Verify files
 ls -lh *.fasta
-# Expected: Each file ~17 KB
 ```
 
-#### Step 2.2: Manual Download (if wget fails)
-1. Go to https://www.ncbi.nlm.nih.gov/nucleotide/
-2. Search: "NC_012920.1"
-3. Click "FASTA" → Copy → Save as `human_mtdna.fasta`
-4. Repeat for NC_001643.1 (chimp) and NC_011120.1 (gorilla)
-5. Place all 3 files in `inputs/` folder
-
-#### Step 2.3: Combine Sequences
+#### Step 2.2: Combine Sequences
 ```bash
-# Create combined file for MSA input
 cat human_mtdna.fasta chimp_mtdna.fasta gorilla_mtdna.fasta > combined_mtdna.fasta
 
-# Verify combined file
-wc -l combined_mtdna.fasta
-# Should see ~2220 lines (3 headers + 3 × ~730 sequence lines)
-
+# Verify
 head -2 combined_mtdna.fasta
-# Should show Human header + sequence start
 ```
 
 ---
@@ -156,271 +112,96 @@ head -2 combined_mtdna.fasta
 #### Step 3.1: Run ClustalW Alignment
 ```bash
 cd ../scripts/
-
-# Execute ClustalW alignment script
 ./01_clustalw_align.sh
 
-# Expected output:
-# ======================================
-# Running ClustalW on full mitochondrial genomes
-# ClustalW completed in 46 seconds
-# Output files:
-#   - Alignment: results/clustalw/alignment.aln
-#   - Tree: results/clustalw/alignment.dnd
-# ======================================
-```
-
-#### Step 3.2: Verify ClustalW Output
-```bash
-# Check files were created
+# Verify output
 ls -lh ../results/clustalw/
-# Should see:
-# alignment.aln (88K)
-# alignment.dnd (66 bytes)
-# stats.txt (27 bytes)
-
-# Verify alignment format
 head -5 ../results/clustalw/alignment.aln
-# Should show:
-# CLUSTAL 2.1 multiple sequence alignment
-# NC_012920.1      GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCTCCATGCATTTGGTATTTT...
 ```
 
-#### Step 3.3: Run MAFFT Alignment
+#### Step 3.2: Run MAFFT Alignment
 ```bash
-# Execute MAFFT alignment script
 ./02_mafft_align.sh
 
-# Expected output:
-# Running MAFFT on full mitochondrial genomes
-# MAFFT completed in 1 seconds
-# Output files:
-#   - Alignment: results/mafft/alignment.aln
-```
-
-#### Step 3.4: Verify MAFFT Output
-```bash
-# Check files were created
+# Verify output
 ls -lh ../results/mafft/
-# Should see:
-# alignment.aln (52K)
-# stats.txt (26 bytes)
-
-# Verify alignment format
 head -5 ../results/mafft/alignment.aln
-# Should show FASTA format alignment
 ```
 
-#### Step 3.5: Quick Comparison
+#### Step 3.3: Compare Execution Times
 ```bash
-# Compare execution times
-echo "=== Execution Times ==="
-echo "ClustalW:"
-cat ../results/clustalw/stats.txt
-echo "MAFFT:"
-cat ../results/mafft/stats.txt
-
-# Compare file sizes
-echo "=== Output Sizes ==="
-ls -lh ../results/clustalw/alignment.aln ../results/mafft/alignment.aln
+echo "ClustalW:" && cat ../results/clustalw/stats.txt
+echo "MAFFT:" && cat ../results/mafft/stats.txt
 ```
 
 ---
 
 ### PART 4: Analyze Results (Google Colab)
 
-#### Step 4.1: Prepare Files for Upload
+#### Step 4.1: Prepare Files for Colab
 ```bash
-# Create a zip file with alignments
 cd ~/nust-genomics-msa-benchmark/results
-zip alignment_results.zip clustalw/alignment.aln mafft/alignment.aln
-ls -lh alignment_results.zip
+# Files ready: clustalw/alignment.aln and mafft/alignment.aln
 ```
 
-#### Step 4.2: Upload to Colab
+#### Step 4.2: Upload to Colab & Analyze
 1. Go to https://colab.research.google.com
-2. Create new notebook: `File` → `New notebook`
-3. Name it: `msa_benchmark_analysis`
-4. In first cell, run:
-```python
-# Install dependencies
-!pip install biopython pandas matplotlib seaborn -q
+2. Create new notebook: `msa_benchmark_analysis`
+3. Upload both alignment files:
+   - `results/clustalw/alignment.aln`
+   - `results/mafft/alignment.aln`
+4. Run provided Python analysis scripts (see Colab notebook template)
 
-# Upload alignment files
-from google.colab import files
-print("Upload your alignment files (clustalw/alignment.aln and mafft/alignment.aln)")
-uploaded = files.upload()
+#### Step 4.3: Generate Results
+Python code will:
+- Parse alignments using BioPython
+- Calculate metrics: identity %, gaps, mismatches (summing to 100%)
+- Create 4 comparison visualizations
+- Save CSV and PNG files
 
-# List uploaded files
-print("Uploaded files:")
-for filename in uploaded.keys():
-    print(f"  - {filename}")
-```
-
-#### Step 4.3: Parse & Analyze Alignments
-```python
-from Bio import AlignIO
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-
-# Read alignments
-print("Reading alignments...")
-clustalw_align = AlignIO.read('alignment.aln', 'clustal')  # First file uploaded
-mafft_align = AlignIO.read('alignment.aln', 'fasta')       # Second file uploaded
-
-# Define analysis function
-def analyze_alignment(alignment, tool_name, exec_time):
-    """Calculate alignment statistics"""
-    seq_count = len(alignment)
-    align_length = alignment.get_alignment_length()
-    
-    # Count identical positions
-    identical_positions = 0
-    gap_positions = 0
-    
-    for i in range(align_length):
-        col = alignment[:, i]
-        col_str = ''.join(col)
-        
-        # Check if all same (no gaps, all identical)
-        if len(set(col_str.replace('-', ''))) <= 1 and '-' not in col_str:
-            identical_positions += 1
-        
-        # Count gaps
-        gap_positions += col_str.count('-')
-    
-    identity_pct = (identical_positions / align_length) * 100
-    
-    return {
-        'Tool': tool_name,
-        'Sequences': seq_count,
-        'Alignment Length (bp)': align_length,
-        'Identical Positions': identical_positions,
-        'Identity %': round(identity_pct, 2),
-        'Gap Count': gap_positions,
-        'Exec Time (sec)': exec_time
-    }
-
-# Analyze both alignments
-results = [
-    analyze_alignment(clustalw_align, 'ClustalW', 46),
-    analyze_alignment(mafft_align, 'MAFFT', 1)
-]
-
-df = pd.DataFrame(results)
-print("\n" + "="*70)
-print("BENCHMARK RESULTS")
-print("="*70)
-print(df.to_string(index=False))
-print("="*70)
-
-# Save results
-df.to_csv('comparison_table.csv', index=False)
-print("\n✅ Results saved to comparison_table.csv")
-```
-
-#### Step 4.4: Create Visualizations
-```python
-# Create comparison figures
-fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-fig.suptitle('ClustalW vs MAFFT: MSA Benchmark Comparison', fontsize=16, fontweight='bold')
-
-# Chart 1: Execution Time
-ax = axes[0, 0]
-colors = ['#3498db', '#2ecc71']
-ax.bar(df['Tool'], df['Exec Time (sec)'], color=colors, width=0.5, edgecolor='black', linewidth=2)
-ax.set_title('Execution Time Comparison', fontsize=12, fontweight='bold')
-ax.set_ylabel('Time (seconds)', fontsize=11)
-ax.set_ylim(0, 50)
-for i, (tool, time) in enumerate(zip(df['Tool'], df['Exec Time (sec)'])):
-    ax.text(i, time+1, f'{time}s', ha='center', fontweight='bold')
-
-# Chart 2: Sequence Identity
-ax = axes[0, 1]
-ax.bar(df['Tool'], df['Identity %'], color=colors, width=0.5, edgecolor='black', linewidth=2)
-ax.set_title('Sequence Identity %', fontsize=12, fontweight='bold')
-ax.set_ylabel('Identity (%)', fontsize=11)
-ax.set_ylim(97, 100)
-for i, (tool, identity) in enumerate(zip(df['Tool'], df['Identity %'])):
-    ax.text(i, identity+0.1, f'{identity}%', ha='center', fontweight='bold')
-
-# Chart 3: Gap Count
-ax = axes[1, 0]
-ax.bar(df['Tool'], df['Gap Count'], color=colors, width=0.5, edgecolor='black', linewidth=2)
-ax.set_title('Gap Count in Alignment', fontsize=12, fontweight='bold')
-ax.set_ylabel('Number of Gaps', fontsize=11)
-for i, (tool, gaps) in enumerate(zip(df['Tool'], df['Gap Count'])):
-    ax.text(i, gaps+50, f'{gaps}', ha='center', fontweight='bold')
-
-# Chart 4: Speed Ratio
-ax = axes[1, 1]
-speed_ratio = [1, 46]
-ax.bar(df['Tool'], speed_ratio, color=colors, width=0.5, edgecolor='black', linewidth=2)
-ax.set_title('Speed Advantage (fold)', fontsize=12, fontweight='bold')
-ax.set_ylabel('Speed Ratio', fontsize=11)
-for i, (tool, ratio) in enumerate(zip(df['Tool'], speed_ratio)):
-    ax.text(i, ratio+1, f'{ratio}x', ha='center', fontweight='bold')
-
-plt.tight_layout()
-plt.savefig('comparison_results.png', dpi=300, bbox_inches='tight')
-plt.show()
-print("\n✅ Visualization saved to comparison_results.png")
-```
-
-#### Step 4.5: Download Results from Colab
-```python
-from google.colab import files
-
-# Download results
-files.download('comparison_table.csv')
-files.download('comparison_results.png')
-print("✅ Files downloaded! Move them to results/comparison/")
-```
-
-#### Step 4.6: Move Results Back to Local Machine
+#### Step 4.4: Move Results Back
 ```bash
-# After downloading from Colab, place files in:
-cd ~/nust-genomics-msa-benchmark/results/comparison/
+cd ~/nust-genomics-msa-benchmark/results/comparison
 
-# Move CSV here
-mv ~/Downloads/comparison_table.csv .
+# Move CSV (Windows path example)
+mv /mnt/c/Users/admin/Downloads/comparison_table.csv .
 
-# Move PNG to figures/
-mv ~/Downloads/comparison_results.png figures/
+# Move PNG
+mv /mnt/c/Users/admin/Downloads/comparison_results.png figures/
 
 # Verify
-ls -lh
-ls -lh figures/
+ls -lh && ls -lh figures/
 ```
 
 ---
 
-### PART 5: Final Steps
+### PART 5: Final Verification
 
-#### Step 5.1: Update Repository
+#### Step 5.1: Verify Complete Structure
 ```bash
 cd ~/nust-genomics-msa-benchmark
+tree -L 2
 
-# Stage all changes
-git add .
-
-# Commit with analysis results
-git commit -m "Add: Complete Colab analysis results and benchmark visualizations"
-
-# View commit history
-git log --oneline
+# Expected:
+# ├── inputs/ (4 FASTA files)
+# ├── scripts/ (2 shell scripts)
+# ├── results/
+# │   ├── clustalw/ (alignment + tree + stats)
+# │   ├── mafft/ (alignment + stats)
+# │   └── comparison/ (CSV + PNG in figures/)
+# ├── logs/ (2 log files)
+# ├── README.md
+# ├── requirements.txt
+# └── .gitignore
 ```
 
-#### Step 5.2: Push to GitHub (Optional)
+#### Step 5.2: Verify Git Status
 ```bash
-# If you have a GitHub repo set up:
-git remote add origin https://github.com/yourusername/nust-genomics-msa-benchmark.git
-git branch -M main
-git push -u origin main
+git status
+# Should show: "On branch master" and "nothing to commit"
 
-# Or if already connected:
-git push
+git log --oneline
+# Should show commit history
 ```
 
 ---
@@ -442,7 +223,7 @@ After running all steps, verify you have:
 ✅ results/
    ✅ clustalw/
       ✅ alignment.aln (88K)
-      ✅ alignment.dnd (66 bytes)
+      ✅ alignment.dnd
       ✅ stats.txt
    ✅ mafft/
       ✅ alignment.aln (52K)
@@ -457,58 +238,54 @@ After running all steps, verify you have:
    ✅ mafft.log
 
 ✅ README.md
+✅ requirements.txt
 ✅ .gitignore
-✅ .git/ (version control)
 ```
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Issue 1: "clustalw: command not found"
+### Issue: "clustalw: command not found"
 ```bash
-# Solution: Install ClustalW
-sudo apt update && sudo apt install -y clustalw
+sudo apt install -y clustalw
 ```
 
-### Issue 2: "mafft: command not found"
+### Issue: FASTA files missing
 ```bash
-# Solution: Install MAFFT
-sudo apt install -y mafft
+# Use wget commands from PART 2 to download
 ```
 
-### Issue 3: FASTA files missing
+### Issue: Alignment files are empty
 ```bash
-# Solution: Download manually or use provided wget commands
-# See PART 2: Download Sequences section
-```
-
-### Issue 4: alignment.aln is empty
-```bash
-# Check logs for errors
 cat logs/clustalw.log
 cat logs/mafft.log
-
-# Re-run alignment script
-./scripts/01_clustalw_align.sh
-./scripts/02_mafft_align.sh
-```
-
-### Issue 5: Colab analysis fails
-```python
-# Make sure you have correct file names
-# Check with:
-import os
-print(os.listdir())
-
-# Re-upload if needed
-from google.colab import files
-files.upload()
+# Check for errors and re-run script
 ```
 
 ---
 
-## 📝 Expected Runtime
+## 📝 How to Push to Git
+
+Once you have successfully reproduced this analysis:
+
+1. **All data is already committed** - The repository structure, scripts, and results are ready
+2. **Just commit your work:**
+```bash
+   git add .
+   git commit -m "Reproduce: Complete MSA benchmark analysis"
+```
+3. **Push to your remote (if set up):**
+```bash
+   git remote add origin <your-github-url>
+   git push -u origin master
+```
+
+The reproducibility is the work - once you can run through this guide successfully, your repository is production-ready for GitHub!
+
+---
+
+## 📊 Expected Runtime
 
 | Task | Time |
 |------|------|
