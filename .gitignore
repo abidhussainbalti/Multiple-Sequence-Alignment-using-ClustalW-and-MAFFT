@@ -1,0 +1,18 @@
+# Temporary files
+*.tar.gz
+*.zip
+*.log
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+
+# Large files (optional)
+*.fasta.bak
+
+# OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Colab notebooks (keep locally)
+*.ipynb
