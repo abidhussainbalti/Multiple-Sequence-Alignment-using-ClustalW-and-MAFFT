@@ -1,0 +1,3 @@
+Tool,Sequences,Alignment Length (bp),Identical Pos,Identity %,Mismatch Pos,Mismatch %,Gap Pos,Gap %,Total %,Exec Time (sec)
+ClustalW,3,17149,13585,79.22,2322,13.54,1242,7.24,100.0,46
+MAFFT,3,17153,13584,79.19,2319,13.52,1250,7.29,100.0,1
