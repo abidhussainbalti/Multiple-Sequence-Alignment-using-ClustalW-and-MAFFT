@@ -1,0 +1,16 @@
+# Python dependencies for MSA Benchmark Analysis
+
+# Bioinformatics
+biopython==1.81
+
+# Data analysis
+pandas==2.0.3
+numpy==1.24.3
+
+# Visualization
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# Jupyter (for local notebook development)
+jupyter==1.0.0
+ipykernel==6.24.0
