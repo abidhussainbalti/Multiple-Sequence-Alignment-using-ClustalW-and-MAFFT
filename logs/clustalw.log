@@ -1,0 +1,28 @@
+
+
+
+ CLUSTAL 2.1 Multiple Sequence Alignments
+
+
+Sequence format is Pearson
+Sequence 1: NC_012920.1 16569 bp
+Sequence 2: NC_001643.1 16554 bp
+Sequence 3: NC_011120.1 16412 bp
+Start of Pairwise alignments
+Aligning...
+
+Sequences (1:2) Aligned. Score:  88
+Sequences (1:3) Aligned. Score:  86
+Sequences (2:3) Aligned. Score:  89
+Guide tree file created:   [combined_mtdna.dnd]
+
+There are 2 groups
+Start of Multiple Alignment
+
+Aligning...
+Group 1: Sequences:   2      Score:290931
+Group 2: Sequences:   3      Score:286057
+Alignment Score 317205
+
+CLUSTAL-Alignment file created  [combined_mtdna.aln]
+
