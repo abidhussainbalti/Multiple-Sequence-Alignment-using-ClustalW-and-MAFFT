@@ -113,4 +113,6 @@ cat results/comparison/comparison_table.csv
 
 ---
 
+For detailed methodology, see METHODOLOGY.md 
+
 **Author:** Abid Hussain | NUST Genomics | March 1, 2026
